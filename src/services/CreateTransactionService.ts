@@ -5,7 +5,7 @@ import Transaction from '../models/Transaction';
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Category from '../models/Category';
 
-interface TransactionDTO {
+interface RequestDTO {
   title: string;
   value: number;
   type: 'income' | 'outcome';
@@ -18,7 +18,7 @@ class CreateTransactionService {
     value,
     type,
     category,
-  }: TransactionDTO): Promise<Transaction> {
+  }: RequestDTO): Promise<Transaction> {
     const transactionsRepository = getCustomRepository(TransactionsRepository);
     const categoriesRepository = getRepository(Category);
 
@@ -27,7 +27,6 @@ class CreateTransactionService {
     if (type === 'outcome' && value > total) {
       throw new AppError(
         'You should not be able to create outcome transaction without a valid balance',
-        400,
       );
     }
 
@@ -37,13 +36,10 @@ class CreateTransactionService {
       where: { title: category },
     });
 
-    console.log(findCategory);
-
     if (!findCategory) {
       const newCategory = categoriesRepository.create({
         title: category,
       });
-      console.log(newCategory);
 
       await categoriesRepository.save(newCategory);
       category_id = newCategory.id;
