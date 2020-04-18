@@ -12,6 +12,7 @@ export default class TransactionsCreateTable1587221326117
             type: 'uuid',
             isPrimary: true,
             generationStrategy: 'uuid',
+            default: 'uuid_generate_v4()',
           },
           {
             name: 'title',
@@ -20,6 +21,10 @@ export default class TransactionsCreateTable1587221326117
           {
             name: 'value',
             type: 'integer',
+          },
+          {
+            name: 'type',
+            type: 'varchar',
           },
           {
             name: 'category_id',
