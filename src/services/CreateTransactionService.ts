@@ -1,6 +1,6 @@
-// import AppError from '../errors/AppError';
-
 import { getCustomRepository, getRepository } from 'typeorm';
+import AppError from '../errors/AppError';
+
 import Transaction from '../models/Transaction';
 import TransactionsRepository from '../repositories/TransactionsRepository';
 import Category from '../models/Category';
@@ -21,6 +21,15 @@ class CreateTransactionService {
   }: TransactionDTO): Promise<Transaction> {
     const transactionsRepository = getCustomRepository(TransactionsRepository);
     const categoriesRepository = getRepository(Category);
+
+    const { total } = await transactionsRepository.getBalance();
+
+    if (type === 'outcome' && value > total) {
+      throw new AppError(
+        'You should not be able to create outcome transaction without a valid balance',
+        400,
+      );
+    }
 
     let category_id = '';
 
