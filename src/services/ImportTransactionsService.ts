@@ -10,45 +10,30 @@ interface RequestDTO {
   csvFilename: string;
 }
 
-interface TransactionFile {
-  title: string;
-  type: 'income' | 'outcome';
-  value: number;
-  category: string;
-}
-
 class ImportTransactionsService {
   async execute({ csvFilename }: RequestDTO): Promise<Transaction[]> {
     const createTransaction = new CreateTransactionService();
-
-    const parsedTransactions: TransactionFile[] = [];
-    const newTransactions: Transaction[] = [];
+    const parsedTransaction: Transaction[] = [];
 
     const csvFilePath = path.join(uploadConfig.directory, csvFilename);
-    fs.createReadStream(csvFilePath)
-      .pipe(parse({ delimiter: ', ', from_line: 2 }))
-      .on('data', row => {
-        const [title, type, value, category] = row;
-        parsedTransactions.push({
-          title,
-          type,
-          value: Number(value),
-          category,
-        });
-      });
+    const csvStream = fs
+      .createReadStream(csvFilePath)
+      .pipe(parse({ delimiter: ', ', from_line: 2 }));
 
-    parsedTransactions.map(async ({ title, type, value, category }) => {
+    csvStream.on('data', async row => {
+      const [title, type, value, category] = row;
+
       const newTransaction = await createTransaction.execute({
         title,
         type,
-        value,
+        value: Number(value),
         category,
       });
-      newTransactions.push(newTransaction);
+      parsedTransaction.push(newTransaction);
+      console.log(parsedTransaction);
     });
-    console.log(newTransactions);
 
-    return newTransactions;
+    return parsedTransaction;
   }
 }
 
