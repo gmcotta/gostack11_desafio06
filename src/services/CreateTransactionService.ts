@@ -30,28 +30,26 @@ class CreateTransactionService {
       );
     }
 
-    let category_id = '';
-
-    const findCategory = await categoriesRepository.findOne({
+    let findCategory = await categoriesRepository.findOne({
       where: { title: category },
     });
 
     if (!findCategory) {
-      const newCategory = categoriesRepository.create({
+      findCategory = categoriesRepository.create({
         title: category,
       });
 
-      await categoriesRepository.save(newCategory);
-      category_id = newCategory.id;
-    } else {
-      category_id = findCategory.id;
+      await categoriesRepository.save(findCategory);
     }
+
+    delete findCategory.created_at;
+    delete findCategory.updated_at;
 
     const newTransaction = transactionsRepository.create({
       title,
       value,
       type,
-      category_id,
+      category: findCategory,
     });
     await transactionsRepository.save(newTransaction);
 
